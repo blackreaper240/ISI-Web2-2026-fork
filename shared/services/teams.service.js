@@ -28,4 +28,16 @@ export default class TeamsService extends HttpService {
         const json = await super.post(this.endpoint, teamRequest.toJson());
         return TeamResponse.fromJson(json);
     }
+
+    async update(id, teamRequest) {
+    if (!teamRequest) throw new Error('Team request is required.');
+    if (!(teamRequest instanceof TeamRequest)) throw new Error('Invalid team request.');
+
+    const json = await super.put(`${this.endpoint}/${id}`, teamRequest.toJson());
+    return TeamResponse.fromJson(json);
+}
+
+async delete(id) {
+    await super.delete(`${this.endpoint}/${id}`);
+}
 }
