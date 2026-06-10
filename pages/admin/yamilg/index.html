@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams - Yamilg</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Teams</h1>
+
+        <!-- Buscar por ID -->
+        <div class="search-bar">
+            <input type="number" id="searchId" placeholder="Buscar por ID..." />
+            <button onclick="searchById()">Buscar</button>
+            <button onclick="loadAll()">Ver todos</button>
+        </div>
+
+        <!-- Tabla -->
+        <table id="teamsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Miembros</th>
+                </tr>
+            </thead>
+            <tbody id="teamsBody">
+                <tr><td colspan="4">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
