@@ -2,55 +2,82 @@ import TeamsService from '../../../services/teams.service.js';
 import TeamRequest from '../../../models/request/team.request.js';
 
 const service = new TeamsService();
+
 const tbody = document.getElementById('teamsBody');
+const teamForm = document.getElementById('teamForm');
+const formTitle = document.getElementById('formTitle');
+const searchId = document.getElementById('searchId');
+const cancelBtn = document.getElementById('cancelBtn');
+const searchBtn = document.getElementById('searchBtn');
+const loadAllBtn = document.getElementById('loadAllBtn');
 
-let editingId = null; // guarda el ID cuando estamos editando
+let editingId = null;
 
-// Renderiza filas en la tabla
 function renderTeams(teams) {
     if (!teams || teams.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5">No se encontraron equipos.</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = teams.map(team => `
-        <tr>
+    tbody.innerHTML = '';
+
+    teams.forEach(team => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
             <td>${team.id}</td>
             <td>${team.name}</td>
             <td>${team.description}</td>
             <td>${team.memberCount}</td>
             <td>
-                <button class="btn-edit" onclick="editTeam(${team.id}, '${team.name}', '${team.description}')">Editar</button>
-                <button class="btn-delete" onclick="deleteTeam(${team.id})">Eliminar</button>
+                <button class="btn-edit" data-id="${team.id}" data-name="${team.name}" data-description="${team.description}">Editar</button>
+                <button class="btn-delete" data-id="${team.id}">Eliminar</button>
             </td>
-        </tr>
-    `).join('');
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+    
+    tbody.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            editingId = btn.dataset.id;
+            formTitle.textContent = `Editando equipo #${editingId}`;
+            teamForm.name.value = btn.dataset.name;
+            teamForm.description.value = btn.dataset.description;
+        });
+    });
+
+    tbody.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const confirmar = confirm(`¿Seguro que deseas eliminar el equipo #${id}?`);
+            if (!confirmar) return;
+            await service.delete(id);
+            await loadAll();
+        });
+    });
 }
 
-// GET /teams → todos
-export async function loadAll() {
+async function loadAll() {
     tbody.innerHTML = `<tr><td colspan="5">Cargando...</td></tr>`;
     const teams = await service.get();
     renderTeams(teams);
 }
 
-// GET /teams/:id → uno por ID
-export async function searchById() {
-    const id = document.getElementById('searchId').value;
-    if (!id) return loadAll();
-
-    const team = await service.getById(id);
-    if (!team) {
-        tbody.innerHTML = `<tr><td colspan="5">No se encontró el equipo con ID ${id}.</td></tr>`;
-        return;
-    }
-    renderTeams([team]);
+function resetForm() {
+    editingId = null;
+    formTitle.textContent = 'Crear equipo';
+    teamForm.reset();
 }
 
-// POST /teams → crear | PUT /teams/:id → editar
-export async function saveTeam() {
-    const name = document.getElementById('inputName').value.trim();
-    const description = document.getElementById('inputDescription').value.trim();
+
+teamForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(teamForm);
+    const name = formData.get('name').trim();
+    const description = formData.get('description').trim();
 
     if (!name || !description) {
         alert('Por favor completa todos los campos.');
@@ -60,51 +87,42 @@ export async function saveTeam() {
     const request = new TeamRequest(name, description);
 
     if (editingId) {
-        // PUT - editar
         await service.update(editingId, request);
-        cancelEdit();
     } else {
-        // POST - crear
         await service.create(request);
-        document.getElementById('inputName').value = '';
-        document.getElementById('inputDescription').value = '';
     }
 
-    loadAll();
-}
+    resetForm();
+    await loadAll();
+});
 
-// Prepara el formulario para editar
-export function editTeam(id, name, description) {
-    editingId = id;
-    document.getElementById('formTitle').textContent = `Editando equipo #${id}`;
-    document.getElementById('inputName').value = name;
-    document.getElementById('inputDescription').value = description;
-}
 
-// Cancela la edición
-export function cancelEdit() {
-    editingId = null;
-    document.getElementById('formTitle').textContent = 'Crear equipo';
-    document.getElementById('inputName').value = '';
-    document.getElementById('inputDescription').value = '';
-}
+cancelBtn.addEventListener('click', () => {
+    resetForm();
+});
 
-// DELETE /teams/:id → eliminar
-export async function deleteTeam(id) {
-    const confirmar = confirm(`¿Seguro que deseas eliminar el equipo #${id}?`);
-    if (!confirmar) return;
+// buscar por id
+searchBtn.addEventListener('click', async () => {
+    const id = searchId.value.trim();
+    if (!id) {
+        await loadAll();
+        return;
+    }
 
-    await service.delete(id);
-    loadAll();
-}
+    const team = await service.getById(id);
+    if (!team) {
+        tbody.innerHTML = `<tr><td colspan="5">No se encontró el equipo con ID ${id}.</td></tr>`;
+        return;
+    }
 
-// Exponer funciones al HTML
-window.loadAll = loadAll;
-window.searchById = searchById;
-window.saveTeam = saveTeam;
-window.editTeam = editTeam;
-window.cancelEdit = cancelEdit;
-window.deleteTeam = deleteTeam;
+    renderTeams([team]);
+});
 
-// Cargar todos al iniciar
+
+loadAllBtn.addEventListener('click', async () => {
+    searchId.value = '';
+    await loadAll();
+});
+
+
 loadAll();

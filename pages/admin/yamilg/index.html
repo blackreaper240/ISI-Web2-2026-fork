@@ -10,25 +10,22 @@
     <div class="container">
         <h1>Teams</h1>
 
-        <!-- Formulario crear / editar -->
-        <div class="form-box">
+        <form id="teamForm">
             <h2 id="formTitle">Crear equipo</h2>
-            <input type="text" id="inputName" placeholder="Nombre" />
-            <input type="text" id="inputDescription" placeholder="Descripción" />
+            <input type="text" name="name" placeholder="Nombre" />
+            <input type="text" name="description" placeholder="Descripción" />
             <div class="form-buttons">
-                <button onclick="saveTeam()">Guardar</button>
-                <button class="cancel-btn" onclick="cancelEdit()">Cancelar</button>
+                <button type="submit">Guardar</button>
+                <button type="button" id="cancelBtn">Cancelar</button>
             </div>
-        </div>
+        </form>
 
-        <!-- Buscar por ID -->
         <div class="search-bar">
             <input type="text" id="searchId" placeholder="Buscar por ID..." />
-            <button onclick="searchById()">Buscar</button>
-            <button onclick="loadAll()">Ver todos</button>
+            <button type="button" id="searchBtn">Buscar</button>
+            <button type="button" id="loadAllBtn">Ver todos</button>
         </div>
 
-        <!-- Tabla -->
         <table>
             <thead>
                 <tr>
